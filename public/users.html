@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+</head>
+<body>
+    <input id="usersBtn" type="button" onclick="getUsers(1)" value="Users">
+    <input id="compBtn" type="button" onclick="getComp()" value="Competitions">
+    <table id="myTable" class="display" cellspacing="0" width="100%">
+ 
+    </table>
+    <form id="user" action="/addUser" method="POST">
+        <input name="firstname" type="text">
+        <input name="lastname" type="text">
+        <input type="submit">
+    </form>
+    <form id="comp" action="/addComp" method="POST">
+        <input name="comp" type="text">
+        <select id="users" name="creator" form="comp"></select>
+        <input type="submit">
+    </form>
+</body>
+<script>
+function getUsers(x){
+$.ajax({
+    url: "http://localhost:3000/getUsers",
+    async: false,
+    dataType: "json",
+    success: function(users){
+        var row;
+        var opt;
+        for(var i=0;i<users.data.length;i++){
+            row += `<tr><td>${users.data[i].firstname}</td><td>${users.data[i].lastname}</td></tr>`
+            opt += `<option value="${users.data[i].id}">${users.data[i].firstname} ${users.data[i].lastname}</option>`
+        }
+        if(x == 1){
+            $('#myTable').html(row)
+        }
+        else if(x == 2){
+            $('#users').append(opt)
+        }
+    }
+})
+}
+
+function getComp(){
+$.ajax({
+    url: "http://localhost:3000/getComp",
+    async: false,
+    dataType: "json",
+    success: function(comp){
+        var row;
+        for(var i=0;i<comp.data.length;i++){
+            row += `<tr><td>${comp.data[i].name}</td><td>${comp.data[i].firstname}</td></tr>`
+        }
+        $('#myTable').html(row)
+    }
+})
+}
+
+$(document).ready(function(){
+    getUsers(2)
+})
+</script>
+</html>
