@@ -55,7 +55,19 @@ app.post('/addComp', function (req, res){
 
 
 app.post('/addResult', function (req, res){
-    
+    var user_id = req.body.users;
+    var comp_id = req.body.comp;
+    var result = req.body.result;
+
+    db.run(`INSERT INTO results (result, user_id, comp_id) VALUES('${result}', '${user_id}', '${comp_id}')`, function(err){
+        if(err){
+            console.log(err.message)
+        }
+        else{
+            console.log(result)
+            res.redirect('/users.html')
+        }
+    })
 })
 
 app.get(`/getUsers`, function (req, res){
@@ -72,7 +84,20 @@ app.get(`/getUsers`, function (req, res){
 })
 
 app.get(`/getComp`, function (req, res){
-    db.all(`SELECT users.firstname, competition.name FROM users INNER JOIN competition ON users.id = competition.user_id`, (err, rows) => {
+    db.all(`SELECT competition.id, users.firstname, competition.name FROM users INNER JOIN competition ON users.id = competition.user_id`, (err, rows) => {
+        if(err){
+            res.status(400).json({"error":err.message});
+            return;
+        }
+        res.json({
+            "message":"success",
+            "data":rows
+        })
+    })
+})
+
+app.get('/getAll', function (req, res){
+    db.all(`SELECT result, users.firstname, competition.name FROM users INNER JOIN results ON users.id = results.user_id INNER JOIN competition ON results.comp_id = competition.id`, (err, rows) => {
         if(err){
             res.status(400).json({"error":err.message});
             return;

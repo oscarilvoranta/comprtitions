@@ -9,7 +9,7 @@
 </head>
 <body>
     <input id="usersBtn" type="button" onclick="getUsers(1)" value="Users">
-    <input id="compBtn" type="button" onclick="getComp()" value="Competitions">
+    <input id="compBtn" type="button" onclick="getComp(1)" value="Competitions">
     <table id="myTable" class="display" cellspacing="0" width="100%">
  
     </table>
@@ -23,8 +23,16 @@
         <select id="users" name="creator" form="comp"></select>
         <input type="submit">
     </form>
+    <form id="result" action="/addResult" method="POST">
+        <select id="resultUsers" name="users" form="result"></select>
+        <select id="resultComp" name="comp" form="result"></select>
+        <input name="result" type="text">
+        <input type="submit">
+    </form>
 </body>
 <script>
+     var persons = [];
+    //get all users from db
 function getUsers(x){
 $.ajax({
     url: "http://localhost:3000/getUsers",
@@ -36,34 +44,57 @@ $.ajax({
         for(var i=0;i<users.data.length;i++){
             row += `<tr><td>${users.data[i].firstname}</td><td>${users.data[i].lastname}</td></tr>`
             opt += `<option value="${users.data[i].id}">${users.data[i].firstname} ${users.data[i].lastname}</option>`
+            persons.push(users.data[i].id)
         }
         if(x == 1){
             $('#myTable').html(row)
         }
         else if(x == 2){
             $('#users').append(opt)
+            $('#resultUsers').append(opt)
         }
+
     }
 })
 }
-
-function getComp(){
+//get all competitions from db
+function getComp(x){
 $.ajax({
     url: "http://localhost:3000/getComp",
     async: false,
     dataType: "json",
     success: function(comp){
         var row;
+        var opt;
         for(var i=0;i<comp.data.length;i++){
             row += `<tr><td>${comp.data[i].name}</td><td>${comp.data[i].firstname}</td></tr>`
+            opt += `<option value="${comp.data[i].id}">${comp.data[i].name}</option>`
         }
-        $('#myTable').html(row)
+        if(x == 1){
+            $('#myTable').html(row)
+        }
+        else if(x == 2){
+            $('#resultComp').append(opt)
+        }
+    }
+})
+}
+//get everything from db
+$.ajax({
+    url: "http://localhost:3000/getAll",
+    async: false,
+    dataType: "json",
+    success: function(all){
+        for(var i=0;i<persons.length;i++){
+            var 
+        }
     }
 })
 }
 
 $(document).ready(function(){
     getUsers(2)
+    getComp(2)
 })
 </script>
 </html>
