@@ -5,14 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 </head>
+<style>
+    #myTable{
+        font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+        width: 100%;
+        border-collapse: collapse;
+    }
+    #myTable tr, #myTable td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+    #myTable tr:nth-child(even){
+        background-color: #f2f2f2;
+    }
+    #myTable th{
+        padding-top: 12px;
+        padding-bottom: 12px;
+        padding-left: 12px;
+        text-align: left;
+        background-color: #4CAF50;
+        color: white;
+    }
+    .btn{
+        background-color: #4CAF50;
+        font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+        color: white;
+        border: none;
+        width: 60px;
+        height: 30px;
+    }
+    input[type="text"]{
+        margin: 10px;
+        height: 30px;
+        font-size: 19px;
+        width: 200px;
+    }
+    select{
+        margin: 10px;
+        height: 30px;
+        font-size: 19px;
+        width: 200px;
+    }
+    input[type="button"]{
+        width: 20%;
+        margin: 10px;
+        height: 30px;
+        font-size: 20px;
+    }
+    h1{
+        font-size: 25px;
+        font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+    }
+</style>
 <body>
+    <header></header>
+
     <input id="usersBtn" type="button" onclick="getUsers(1)" value="Users">
     <input id="compBtn" type="button" onclick="getComp(1)" value="Competitions">
-    <table id="myTable" class="display" cellspacing="0" width="100%">
- 
-    </table>
+    <form id="allResults" action="/addAllResult" method="POST">
+        <table id="myTable" width="100%">
+    
+        </table>
+    </form>
     <form id="user" action="/addUser" method="POST">
         <input name="firstname" type="text">
         <input name="lastname" type="text">
@@ -28,10 +85,12 @@
         <select id="resultComp" name="comp" form="result"></select>
         <input name="result" type="text">
         <input type="submit">
-    </form>
+    </form><br>
+    <input id="res" type="button" onclick="resultTable()" value="a" hidden>
 </body>
 <script>
-     var persons = [];
+    var persons = [];
+    var cID;
     //get all users from db
 function getUsers(x){
 $.ajax({
@@ -42,9 +101,9 @@ $.ajax({
         var row;
         var opt;
         for(var i=0;i<users.data.length;i++){
-            row += `<tr><td>${users.data[i].firstname}</td><td>${users.data[i].lastname}</td></tr>`
+            row += `<tr><td>${users.data[i].firstname} ${users.data[i].lastname}</td></tr>`
             opt += `<option value="${users.data[i].id}">${users.data[i].firstname} ${users.data[i].lastname}</option>`
-            persons.push(users.data[i].id)
+            persons.push(users.data[i].firstname + ' ' + users.data[i].lastname)
         }
         if(x == 1){
             $('#myTable').html(row)
@@ -53,7 +112,6 @@ $.ajax({
             $('#users').append(opt)
             $('#resultUsers').append(opt)
         }
-
     }
 })
 }
@@ -67,7 +125,7 @@ $.ajax({
         var row;
         var opt;
         for(var i=0;i<comp.data.length;i++){
-            row += `<tr><td>${comp.data[i].name}</td><td>${comp.data[i].firstname}</td></tr>`
+            row += `<tr><td>${comp.data[i].name}</td><td>${comp.data[i].firstname} ${comp.data[i].lastname}</td></tr>`
             opt += `<option value="${comp.data[i].id}">${comp.data[i].name}</option>`
         }
         if(x == 1){
@@ -79,22 +137,128 @@ $.ajax({
     }
 })
 }
+
+function compare( a, b ) {
+  if ( a.id < b.id ){
+    return -1;
+  }
+  if ( a.id > b.id ){
+    return 1;
+  }
+  return 0;
+}
 //get everything from db
+function getAll(){
 $.ajax({
     url: "http://localhost:3000/getAll",
     async: false,
     dataType: "json",
     success: function(all){
+        var row;
         for(var i=0;i<persons.length;i++){
-            var 
+            row += `<tr><td>${persons[i]}</td>`
+            var x = [];
+            for(var j=0;j<all.data.length;j++){
+                if(all.data[j].firstname +' '+ all.data[j].lastname == persons[i]){
+                    x.push({id:all.data[j].id, result:all.data[j].result})
+                    x.sort( compare );
+                }
+            }
+            for(var k=0;k<x.length;k++){
+                row += `<td>${x[k].result}</td>`
+            }
+            row += "</tr>"
         }
+        $('#myTable').html(row)
     }
 })
+}
+
+function compare2( a, b ) {
+  if ( a.points < b.points ){
+    return -1;
+  }
+  if ( a.points > b.points ){
+    return 1;
+  }
+  return 0;
+}
+function getPos(){
+    $.ajax({
+        url: "http://localhost:3000/getAll",
+        async: false,
+        dataType: "json",
+        success: function(all){
+            var arr =[]
+            var np =[]
+            var namesInOrder =[]
+            var row;
+            for(var i=0;i<all.data.length;i++){
+                arr.push(all.data[i])
+            }
+            console.log(arr)
+            console.log(persons)
+            for(var j=0;j<persons.length;j++){
+                var filteredArr = arr.filter(word => word.firstname +' '+ word.lastname == persons[j])
+                var points = 0
+                for(var k=0;k<filteredArr.length;k++){
+                    points += filteredArr[k].result
+                }
+                np.push({name:persons[j], points:points})
+            }
+            namesInOrder = np.sort( compare2 )
+            console.log(np.sort( compare2 ))
+            row = `<tr><td>name</td><td>rank</td></tr>`
+            for(var l=0;l<namesInOrder.length;l++){
+                row += `<tr><td>${namesInOrder[l].name}</td><td>${l+1}</td></tr>`
+            }
+            $('#myTable').html(row)
+        }
+    })
+}
+
+function resultCheck(){
+    $.ajax({
+    url: "http://localhost:3000/getComp",
+    async: false,
+    dataType: "json",
+    success: function(lis){
+        for(var i=0;i<lis.data.length;i++){
+            if(lis.data[i].ra == 0){
+                cID = lis.data[i].id
+                $('#res').show()
+            }
+        }
+
+    }
+    })
+}
+
+function resultTable(){
+    $.ajax({
+    url: "http://localhost:3000/getUsers",
+    async: false,
+    dataType: "json",
+    success: function(lis){
+        var row = `<tr><td>name</td><td>result</td></tr>`;
+        for(var i=0;i<lis.data.length;i++){
+            row += `<tr><td>${lis.data[i].firstname} ${lis.data[i].lastname}<input  type="hidden" name="userId[]" value="${lis.data[i].id}"></td><td><input type="number" name="results[]"></td></tr>`
+        }
+        row += `<tr><td><input type="submit"><input type="hidden" name="cID" value="${cID}"></td></tr>`
+        $('#myTable').html(row)
+    } 
+    })
+}
+
+function sendResultds(){
+
 }
 
 $(document).ready(function(){
     getUsers(2)
     getComp(2)
+    getPos()
+    resultCheck()
 })
 </script>
 </html>

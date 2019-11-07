@@ -42,7 +42,7 @@ app.post('/addComp', function (req, res){
     var name = req.body.comp
     var user_id = req.body.creator
 
-    db.run(`INSERT INTO competition (name, user_id) VALUES('${name}', '${user_id}')`, function(err){
+    db.run(`INSERT INTO competition (name, user_id, ra) VALUES('${name}', '${user_id}', '${0}')`, function(err){
         if(err){
             console.log(err.message)
         }
@@ -53,6 +53,41 @@ app.post('/addComp', function (req, res){
     })
 })
 
+app.post('/addAllResult', function (req, res){
+    var results = req.body.results;
+    var userId = req.body.userId;
+    var compId = req.body.cID;
+    console.log(results)
+    console.log(userId)
+    console.log(compId)
+    var query = `INSERT INTO results (result, user_id, comp_id) VALUES`;
+    for(var i=0;i<userId.length;i++){
+        if(i == userId.length - 1){
+            query += `('${results[i]}', '${userId[i]}', '${compId}')`
+        }
+        else{
+            query += `('${results[i]}', '${userId[i]}', '${compId}'),`
+        }
+    }
+    console.log(query)
+    db.run(query, function(err){
+        if(err){
+            console.log(err.message)
+        }
+        else{
+            db.run(`UPDATE competition SET ra = 1 WHERE ra = 0`, function(err){
+                if(err){
+                    console.log(err.message)
+                }
+                else{
+                    console.log('bom')
+                }
+            })
+            console.log(`Results added for competition: ${compId}`)
+            res.redirect('/users.html')
+        }
+    })
+})
 
 app.post('/addResult', function (req, res){
     var user_id = req.body.users;
@@ -84,7 +119,7 @@ app.get(`/getUsers`, function (req, res){
 })
 
 app.get(`/getComp`, function (req, res){
-    db.all(`SELECT competition.id, users.firstname, competition.name FROM users INNER JOIN competition ON users.id = competition.user_id`, (err, rows) => {
+    db.all(`SELECT competition.id, users.firstname, users.lastname, competition.name, competition.ra FROM users INNER JOIN competition ON users.id = competition.user_id`, (err, rows) => {
         if(err){
             res.status(400).json({"error":err.message});
             return;
@@ -97,7 +132,7 @@ app.get(`/getComp`, function (req, res){
 })
 
 app.get('/getAll', function (req, res){
-    db.all(`SELECT result, users.firstname, competition.name FROM users INNER JOIN results ON users.id = results.user_id INNER JOIN competition ON results.comp_id = competition.id`, (err, rows) => {
+    db.all(`SELECT result, users.firstname, users.lastname, competition.name, competition.id FROM users INNER JOIN results ON users.id = results.user_id INNER JOIN competition ON results.comp_id = competition.id`, (err, rows) => {
         if(err){
             res.status(400).json({"error":err.message});
             return;
@@ -107,6 +142,27 @@ app.get('/getAll', function (req, res){
             "data":rows
         })
     })
+})
+
+app.get('/a', function (req, res){
+    db.all(`SELECT MAX(id) AS id,name FROM competition`, (err, rows) => {
+        if(err){
+            res.status(400).json({"error":err.message});
+            return;
+        }
+        db.all(`SELECT id, firstname, lastname FROM users`, (err, rows2) => {
+            if(err){
+                res.status(400).json({"error":err.message});
+                return;
+            }
+            res.json({
+                "data1":rows,
+                "data2":rows2
+            })
+        })
+        
+    })
+    
 })
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
