@@ -4,94 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="a.css">
+    <title>Document</title>
 </head>
-<style>
-    #myTable{
-        font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
-        width: 100%;
-        border-collapse: collapse;
-    }
-    #myTable tr, #myTable td {
-        border: 1px solid #ddd;
-        padding: 8px;
-    }
-    #myTable tr:nth-child(even){
-        background-color: #f2f2f2;
-    }
-    #myTable th{
-        padding-top: 12px;
-        padding-bottom: 12px;
-        padding-left: 12px;
-        text-align: left;
-        background-color: #4CAF50;
-        color: white;
-    }
-    .btn{
-        background-color: #4CAF50;
-        font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
-        color: white;
-        border: none;
-        width: 60px;
-        height: 30px;
-    }
-    input[type="text"]{
-        margin: 10px;
-        height: 30px;
-        font-size: 19px;
-        width: 200px;
-    }
-    select{
-        margin: 10px;
-        height: 30px;
-        font-size: 19px;
-        width: 200px;
-    }
-    input[type="button"]{
-        width: 20%;
-        margin: 10px;
-        height: 30px;
-        font-size: 20px;
-    }
-    h1{
-        font-size: 25px;
-        font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
-    }
-</style>
 <body>
     <header></header>
 
     <input id="usersBtn" type="button" onclick="getUsers(1)" value="Users">
     <input id="compBtn" type="button" onclick="getComp(1)" value="Competitions">
-    <form id="allResults" action="/addAllResult" method="POST">
+    <form id="addResults" action="/addResults" method="POST">
         <table id="myTable" width="100%">
     
         </table>
     </form>
-    <form id="user" action="/addUser" method="POST">
+    <form id="addUser" action="/addUser" method="POST">
         <input name="firstname" type="text">
         <input name="lastname" type="text">
         <input type="submit">
     </form>
-    <form id="comp" action="/addComp" method="POST">
+    <form id="addComp" action="/addComp" method="POST">
         <input name="comp" type="text">
         <select id="users" name="creator" form="comp"></select>
         <input type="submit">
     </form>
-    <form id="result" action="/addResult" method="POST">
+    <form id="addResult" action="/addResult" method="POST">
         <select id="resultUsers" name="users" form="result"></select>
         <select id="resultComp" name="comp" form="result"></select>
         <input name="result" type="text">
         <input type="submit">
     </form><br>
-    <input id="res" type="button" onclick="resultTable()" value="a" hidden>
+    <input id="addResTable" type="button" onclick="resultTable()" value="Add Results" hidden>
 </body>
 <script>
     var persons = [];
     var cID;
-    //get all users from db
+//get all users from the database and displays it in a table//
 function getUsers(x){
 $.ajax({
     url: "http://localhost:3000/getUsers",
@@ -115,7 +64,7 @@ $.ajax({
     }
 })
 }
-//get all competitions from db
+//get all competitions from the database and displays it in a table//
 function getComp(x){
 $.ajax({
     url: "http://localhost:3000/getComp",
@@ -147,7 +96,7 @@ function compare( a, b ) {
   }
   return 0;
 }
-//get everything from db
+//get every result for every person from the database and displays them in a table//
 function getAll(){
 $.ajax({
     url: "http://localhost:3000/getAll",
@@ -183,6 +132,7 @@ function compare2( a, b ) {
   }
   return 0;
 }
+//get every result from the database and converts them to a rank for every person and displays them in order in a table//
 function getPos(){
     $.ajax({
         url: "http://localhost:3000/getAll",
@@ -216,42 +166,38 @@ function getPos(){
         }
     })
 }
-
+//checks if a competition has inserted results or not and shows button to add them//
 function resultCheck(){
     $.ajax({
     url: "http://localhost:3000/getComp",
     async: false,
     dataType: "json",
-    success: function(lis){
-        for(var i=0;i<lis.data.length;i++){
-            if(lis.data[i].ra == 0){
-                cID = lis.data[i].id
-                $('#res').show()
+    success: function(comp){
+        for(var i=0;i<comp.data.length;i++){
+            if(comp.data[i].result_indicator == 0){
+                cID = comp.data[i].id
+                $('#addResTable').show()
             }
         }
 
     }
     })
 }
-
+//displays result adding table//
 function resultTable(){
     $.ajax({
     url: "http://localhost:3000/getUsers",
     async: false,
     dataType: "json",
-    success: function(lis){
+    success: function(user){
         var row = `<tr><td>name</td><td>result</td></tr>`;
-        for(var i=0;i<lis.data.length;i++){
-            row += `<tr><td>${lis.data[i].firstname} ${lis.data[i].lastname}<input  type="hidden" name="userId[]" value="${lis.data[i].id}"></td><td><input type="number" name="results[]"></td></tr>`
+        for(var i=0;i<user.data.length;i++){
+            row += `<tr><td>${user.data[i].firstname} ${user.data[i].lastname}<input  type="hidden" name="userId[]" value="${user.data[i].id}"></td><td><input type="number" name="results[]"></td></tr>`
         }
         row += `<tr><td><input type="submit"><input type="hidden" name="cID" value="${cID}"></td></tr>`
         $('#myTable').html(row)
     } 
     })
-}
-
-function sendResultds(){
-
 }
 
 $(document).ready(function(){
