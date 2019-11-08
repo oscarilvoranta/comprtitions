@@ -1,0 +1,50 @@
+#myTable{
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+    width: 100%;
+    border-collapse: collapse;
+}
+#myTable tr, #myTable td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+#myTable tr:nth-child(even){
+    background-color: #f2f2f2;
+}
+#myTable th{
+    padding-top: 12px;
+    padding-bottom: 12px;
+    padding-left: 12px;
+    text-align: left;
+    background-color: #4CAF50;
+    color: white;
+}
+.btn{
+    background-color: #4CAF50;
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+    color: white;
+    border: none;
+    width: 60px;
+    height: 30px;
+}
+input[type="text"]{
+    margin: 10px;
+    height: 30px;
+    font-size: 19px;
+    width: 200px;
+}
+select{
+    margin: 10px;
+    height: 30px;
+    font-size: 19px;
+    width: 200px;
+}
+input[type="button"]{
+    width: 20%;
+    margin: 10px;
+    height: 30px;
+    font-size: 20px;
+}
+h1{
+    font-size: 25px;
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+}
