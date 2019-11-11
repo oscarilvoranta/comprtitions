@@ -160,9 +160,20 @@ function getPos(){
             console.log(np.sort( compare2 ))
             row = `<tr><td>name</td><td>rank</td></tr>`
             for(var l=0;l<namesInOrder.length;l++){
-                row += `<tr><td>${namesInOrder[l].name}</td><td>${l+1}</td></tr>`
+                row += `<tr><td><a onClick="indResults()" style="cursor: pointer; cursor: hand;">${namesInOrder[l].name}</a></td><td>${l+1}</td></tr>`
             }
             $('#myTable').html(row)
+        }
+    })
+}
+
+function indResults(){
+    $.ajax({
+        url: "http://localhost:3000/getAll",
+        asunc: false,
+        dataType: "json",
+        success: function(all){
+
         }
     })
 }
